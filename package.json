@@ -1,0 +1,13 @@
+{
+  "name": "ag-ui-foundry",
+  "private": true,
+  "scripts": {
+    "install:frontend": "npm --prefix frontend install",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build:frontend": "npm --prefix frontend run build",
+    "start:frontend": "npm --prefix frontend run start",
+    "lint:frontend": "npm --prefix frontend run lint",
+    "dev:backend": "python backend/server.py",
+    "update-agent": "python backend/scripts/update_foundry_agent.py"
+  }
+}
