@@ -1,0 +1,7 @@
+--pre
+agent-framework
+agent-framework-ag-ui
+azure-ai-projects
+azure-identity
+uvicorn
+python-dotenv
