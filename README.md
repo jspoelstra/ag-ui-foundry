@@ -2,7 +2,7 @@
 title: AG-UI Foundry v2 Example
 description: Example server integrating AG-UI with Azure AI Foundry v2 agents using Microsoft Agent Framework.
 author: Microsoft
-ms.date: 2026-02-20
+ms.date: 2026-02-24
 ms.topic: overview
 keywords:
   - ag-ui
@@ -15,7 +15,7 @@ estimated_reading_time: 3
 
 ## Overview
 
-Integrate AG-UI with Azure AI Foundry v2 agents using a FastAPI server and Microsoft Agent Framework. The server loads an existing agent from your Foundry project and exposes it at an AG-UI endpoint.
+Integrate AG-UI with Azure AI Foundry v2 agents using a FastAPI server and Microsoft Agent Framework. The backend can run either a Foundry-backed agent or a local agent that calls a Foundry agent as a tool, exposing both through an AG-UI endpoint.
 
 ## Repository structure
 
@@ -39,12 +39,18 @@ Integrate AG-UI with Azure AI Foundry v2 agents using a FastAPI server and Micro
 	pip install -r backend/requirements.txt
 	```
 
-2. Configure environment variables. You can use a `.env` file or export them in your shell.
+2. Configure environment variables. You can use a `.env` file or export them in your shell. Start with `.env.sample` and fill in your values.
 
 	```bash
+	export AGENT_KIND="local"
 	export AZURE_AI_PROJECT_ENDPOINT="https://your-project-name.services.ai.azure.com/api/projects/your-project-name"
 	export AZURE_AI_PROJECT_AGENT_NAME="AgentSmith"
 	# Optional: export AZURE_AI_PROJECT_AGENT_VERSION="1.0"
+	# Optional: export AZURE_AI_PROJECT_AGENT_DESCRIPTION="Ask the Foundry agent a question"
+	# Local agent uses Azure OpenAI for chat and calls the Foundry agent as a tool.
+	export AZURE_OPENAI_CHAT_DEPLOYMENT_NAME="gpt-5-mini"
+	export AZURE_OPENAI_ENDPOINT="https://your-resource-name.cognitiveservices.azure.com/openai/deployments/gpt-5-mini/chat/completions?api-version=2024-05-01-preview"
+	export AZURE_OPENAI_API_KEY="your-azure-openai-api-key"
 	```
 
 3. Sign in to Azure if you are using Azure CLI credentials.
@@ -55,8 +61,20 @@ Integrate AG-UI with Azure AI Foundry v2 agents using a FastAPI server and Micro
 
 ## Run the server
 
+You can run the backend with either agent implementation.
+
+* `local` uses Azure OpenAI for chat and calls the Foundry agent through the `ask_foundry` tool.
+* `foundry` loads the agent directly from Foundry.
+
 ```bash
-python backend/server.py
+python -m backend.server --agent local
+```
+
+Or set the default in your environment:
+
+```bash
+export AGENT_KIND="foundry"
+python -m backend.server
 ```
 
 The server runs on <http://localhost:8000>. The AG-UI endpoint is available at <http://localhost:8000/ag-ui>.
