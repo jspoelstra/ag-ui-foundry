@@ -25,8 +25,10 @@ _AGENT_INSTRUCTIONS = """
        - update_info(project) only for full rewrites or multi-field updates.
     3. Preserve existing data. Do not remove components unless the user explicitly asks.
     4. For add_component, send the full updated components list.
-    5. After tool calls, reply briefly (1-2 sentences).
-    6. Use ask_foundry(question) to talk with another agent for tasks not about project state.
+    5. Never call multi_tool_use.parallel. Make tool calls sequentially.
+    6. For multi-field updates, prefer update_info(project) or sequential tool calls.
+    7. After tool calls, reply briefly (1-2 sentences).
+    8. Use ask_foundry(question) to talk with another agent for tasks not about project state.
 """
 
 def _build_tools(client: SupportsChatGetResponse[Any]) -> list[Any]:
