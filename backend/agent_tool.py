@@ -51,11 +51,11 @@ async def _create_foundry_qa_tool() -> FunctionTool:
         or "Ask the Foundry agent a question and return its response."
     )
 
-    async def ask_foundry(question: str) -> str:
+    async def ask_agent(question: str) -> str:
         response = await agent.run(messages=question, stream=False)
         return response.text or ""
 
-    return tool(description=description)(ask_foundry)
+    return tool(description=description)(ask_agent)
 
 
 def build_foundry_qa_tool() -> FunctionTool:
