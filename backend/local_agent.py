@@ -28,7 +28,7 @@ _AGENT_INSTRUCTIONS = """
     5. Never call multi_tool_use.parallel. Make tool calls sequentially.
     6. For multi-field updates, prefer update_info(project) or sequential tool calls.
     7. After tool calls, reply briefly (1-2 sentences).
-    8. Use ask_foundry(question) to talk with another agent for tasks not about project state.
+    8. Use ask_agent(question) to talk with another agent for information.
 """
 
 def _build_tools(client: SupportsChatGetResponse[Any]) -> list[Any]:
