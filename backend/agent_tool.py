@@ -51,9 +51,20 @@ async def _create_foundry_qa_tool() -> FunctionTool:
         or "Ask the Foundry agent a question and return its response."
     )
 
-    async def ask_agent(question: str) -> str:
-        response = await agent.run(messages=question, stream=False)
-        return response.text or ""
+    async def ask_agent(question: str, context: str = "") -> str:
+        """Ask the Foundry agent a question.
+
+        Args:
+            question: The question to research.
+            context: Optional current project state for additional context.
+        """
+        prompt = question
+        if context:
+            prompt = f"Context: {context}\n\nQuestion: {question}"
+        response = await agent.run(messages=prompt, stream=False)
+        if response.text is None:
+            return "Error: The research agent did not return a response."
+        return response.text
 
     return tool(description=description)(ask_agent)
 
