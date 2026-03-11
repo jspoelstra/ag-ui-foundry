@@ -65,6 +65,39 @@ orchestrator = project_client.agents.create_agent(
 - Less control over the communication (opaque server-side handoff)
 - Unclear how `predict_state_config` would work with a Foundry-hosted orchestrator
 
+> **Update (2026-03-11) — Foundry-hosted agent with client-side tools: findings**
+>
+> We built and tested a hybrid variant of Option 1 in `foundry_agent.py`: a
+> Foundry-hosted agent loaded via `AzureAIProjectAgentProvider.get_agent()` with
+> the state-management tools (`update_title`, `update_description`, etc.) passed
+> as client-side function tools. This proved that **client-side function tools on
+> Foundry agents do work** — the Agent Framework registers tool definitions with
+> the Foundry agent, intercepts tool calls locally, executes the functions, and
+> submits results back via `submit_tool_outputs`. AG-UI's `predict_state_config`
+> can intercept the tool call arguments and stream state updates to the frontend,
+> exactly as it does for the local agent.
+>
+> However, we hit an **unsolved blocker**: when the Foundry agent also has
+> server-side tool connections (in our case, MCP tools including a Foundry IQ
+> knowledge base), the intermediate tool-call and tool-end events from those
+> server-side tools leak through the AG-UI event stream. The client-side
+> `AgentFrameworkAgent` receives `tool_call_end` events for tool calls it never
+> initiated, causing AG-UI protocol errors ("tool-end message with no active tool
+> call"). Extensive workaround attempts (filtering, event suppression) did not
+> resolve the issue.
+>
+> This is the primary reason the project uses the "Foundry agent as tool"
+> pattern (Option 3) rather than a Foundry-hosted orchestrator.
+>
+> **What would unblock this path:**
+> - The Agent Framework or AG-UI adapter filtering out events for server-side-only
+>   tool calls before they reach the AG-UI stream
+> - The Foundry Agent Service providing a mode that suppresses tool events for
+>   server-side tools when the caller is a client-side orchestrator
+> - A clear separation in the event stream between client-side tool calls
+>   (requiring `submit_tool_outputs`) and server-side tool calls (fully resolved
+>   within the Foundry service)
+
 ### Option 2: WorkflowBuilder (Agent Framework SDK)
 
 The `agent-framework` SDK's `WorkflowBuilder` composes agents as nodes in a directed
@@ -175,6 +208,10 @@ async def ask_agent(question: str, context: str = "") -> str:
 | Dynamic routing (LLM decides) | Yes                | No (fixed graph)| Yes           |
 | Streaming support             | Depends on Foundry | Yes             | Possible      |
 | AG-UI state integration       | Needs rework       | Needs rework    | Works today   |
+| Client-side function tools    | Work (tested) ¹    | Yes             | Yes           |
+| Server-side MCP tool compat.  | **Broken** ¹       | N/A             | N/A           |
 | Structured data passing       | Server-side        | Yes (typed)     | Partial       |
 | Bidirectional communication   | Server-side        | Yes             | No            |
 | Requires architecture change  | Yes (both hosted)  | Yes (workflow)  | No            |
+
+¹ See "Update (2026-03-11)" in Option 1 above.
