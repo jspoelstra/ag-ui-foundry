@@ -28,7 +28,9 @@ _AGENT_INSTRUCTIONS = """
     5. Never call multi_tool_use.parallel. Make tool calls sequentially.
     6. For multi-field updates, prefer update_info(project) or sequential tool calls.
     7. After tool calls, reply briefly (1-2 sentences).
-    8. Use ask_agent(question) to talk with another agent for information.
+    8. Use ask_agent(question, context) to talk with another agent for information.
+       Pass the current project state as context so the agent can give relevant answers.
+       Example: ask_agent("What tech stack fits?", context="name: MyApp, components: [React, Node]")
 """
 
 def _build_tools(client: SupportsChatGetResponse[Any]) -> list[Any]:
