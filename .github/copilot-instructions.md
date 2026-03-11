@@ -111,3 +111,4 @@ Before starting a new task in the above plan, update progress in the plan.
 - Work through each checklist item systematically.
 - Keep communication concise and focused.
 - Follow development best practices.
+- Follow GitHub Flow when developing features: create a feature branch, commit changes, and open a pull request for review.
