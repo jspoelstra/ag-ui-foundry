@@ -39,7 +39,7 @@ Integrate AG-UI with Azure AI Foundry v2 agents using a FastAPI server and Micro
 	pip install -r backend/requirements.txt
 	```
 
-2. Configure environment variables. You can use a `.env` file or export them in your shell. Start with `.env.sample` and fill in your values.
+2. Configure environment variables. You can use a `.env` file or export them in your shell. Start with `env.sample` and fill in your values.
 
 	```bash
 	export AGENT_KIND="local"
@@ -52,9 +52,18 @@ Integrate AG-UI with Azure AI Foundry v2 agents using a FastAPI server and Micro
 	export AZURE_OPENAI_ENDPOINT="https://your-resource-name.cognitiveservices.azure.com/openai/deployments/gpt-5-mini/chat/completions?api-version=2024-05-01-preview"
 	export AZURE_OPENAI_API_KEY="your-azure-openai-api-key"
 	# Optional frontend UI text
+	export NEXT_PUBLIC_AGENT_NAME="ag-ui"
 	export NEXT_PUBLIC_IMPROVE_BUTTON_LABEL="Improve with AI"
 	export NEXT_PUBLIC_IMPROVE_PROMPT="Improve the project"
 	```
+
+Frontend environment variable loading order:
+
+* Values in `frontend/.env.local` and other Next.js `frontend/.env*` files are loaded first by Next.js.
+* Missing values fall back to the repository root `.env` file.
+* Existing values are never overridden by fallback loading.
+
+Use `NEXT_PUBLIC_` prefixes for any values the browser must read.
 
 3. Sign in to Azure if you are using Azure CLI credentials.
 
@@ -108,8 +117,14 @@ The frontend is a minimal Next.js app that uses CopilotKit and proxies AG-UI req
 
 By default, the CopilotKit route proxies to <http://localhost:8000/ag-ui>. To change it, set `AG_UI_ENDPOINT` in your environment before running the frontend.
 
+You can set frontend variables in either location:
+
+* `frontend/.env.local` for frontend-only overrides
+* root `.env` for shared backend and frontend values
+
 You can also configure the improve button text and the prompt it sends:
 
+* `NEXT_PUBLIC_AGENT_NAME` controls the frontend Copilot agent name.
 * `NEXT_PUBLIC_IMPROVE_BUTTON_LABEL` controls the button label.
 * `NEXT_PUBLIC_IMPROVE_PROMPT` controls the user message sent when the button is clicked.
 
