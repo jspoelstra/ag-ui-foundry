@@ -51,6 +51,9 @@ Integrate AG-UI with Azure AI Foundry v2 agents using a FastAPI server and Micro
 	export AZURE_OPENAI_CHAT_DEPLOYMENT_NAME="gpt-5-mini"
 	export AZURE_OPENAI_ENDPOINT="https://your-resource-name.cognitiveservices.azure.com/openai/deployments/gpt-5-mini/chat/completions?api-version=2024-05-01-preview"
 	export AZURE_OPENAI_API_KEY="your-azure-openai-api-key"
+	# Optional frontend UI text
+	export NEXT_PUBLIC_IMPROVE_BUTTON_LABEL="Improve with AI"
+	export NEXT_PUBLIC_IMPROVE_PROMPT="Improve the project"
 	```
 
 3. Sign in to Azure if you are using Azure CLI credentials.
@@ -104,6 +107,11 @@ The frontend is a minimal Next.js app that uses CopilotKit and proxies AG-UI req
 3. Open <http://localhost:3000>.
 
 By default, the CopilotKit route proxies to <http://localhost:8000/ag-ui>. To change it, set `AG_UI_ENDPOINT` in your environment before running the frontend.
+
+You can also configure the improve button text and the prompt it sends:
+
+* `NEXT_PUBLIC_IMPROVE_BUTTON_LABEL` controls the button label.
+* `NEXT_PUBLIC_IMPROVE_PROMPT` controls the user message sent when the button is clicked.
 
 ## Architecture
 
