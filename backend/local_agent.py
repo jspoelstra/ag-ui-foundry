@@ -77,6 +77,7 @@ def local_agent(client: SupportsChatGetResponse[Any]) -> AgentFrameworkAgent:
             "description": {"tool": "update_description", "tool_argument": "description"},
             "location": {"tool": "update_location", "tool_argument": "location"},
             "components": {"tool": "add_component", "tool_argument": "components"},
+            "info": {"tool": "update_info", "tool_argument": "project"},
         },
         require_confirmation=False,
     )
