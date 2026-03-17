@@ -9,7 +9,7 @@ from typing import Any
 from agent_framework import Agent, SupportsChatGetResponse
 from agent_framework.ag_ui import AgentFrameworkAgent
 from backend.agent_tool import build_foundry_qa_tool
-from backend.state import update_info, update_title, update_description, update_location, add_component
+from backend.state import update_title, update_description, update_location, add_component
 
 
 _AGENT_INSTRUCTIONS = """
@@ -22,11 +22,10 @@ _AGENT_INSTRUCTIONS = """
        - update_description(description)
        - update_location(location)
        - add_component(components)
-       - update_info(project) only for full rewrites or multi-field updates.
     3. Preserve existing data. Do not remove components unless the user explicitly asks.
     4. For add_component, send the full updated components list.
     5. Never call multi_tool_use.parallel. Make tool calls sequentially.
-    6. For multi-field updates, prefer update_info(project) or sequential tool calls.
+    6. For multi-field updates, prefer sequential tool calls.
     7. After tool calls, reply briefly (1-2 sentences).
     8. Use ask_agent(question, context) to talk with another agent for information.
        Pass the current project state as context so the agent can give relevant answers.
@@ -35,7 +34,6 @@ _AGENT_INSTRUCTIONS = """
 
 def _build_tools(client: SupportsChatGetResponse[Any]) -> list[Any]:
     tools: list[Any] = [
-        update_info,
         update_title,
         update_description,
         update_location,
@@ -77,7 +75,6 @@ def local_agent(client: SupportsChatGetResponse[Any]) -> AgentFrameworkAgent:
             "description": {"tool": "update_description", "tool_argument": "description"},
             "location": {"tool": "update_location", "tool_argument": "location"},
             "components": {"tool": "add_component", "tool_argument": "components"},
-            "info": {"tool": "update_info", "tool_argument": "project"},
         },
         require_confirmation=False,
     )

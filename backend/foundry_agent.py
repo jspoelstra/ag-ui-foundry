@@ -14,7 +14,7 @@ from azure.ai.projects.aio import AIProjectClient
 from agent_framework.ag_ui import AgentFrameworkAgent
 from agent_framework.azure import AzureAIProjectAgentProvider
 
-from backend.state import update_info, update_title, update_description, update_location, add_component
+from backend.state import update_title, update_description, update_location, add_component
 
 
 def _get_required_env(name: str) -> str:
@@ -38,7 +38,6 @@ async def _load_foundry_agent() -> AgentFrameworkAgent:
                     name=agent_name,
                     version=agent_version,
                     tools=[
-                        update_info,
                         update_title,
                         update_description,
                         update_location,
@@ -49,7 +48,6 @@ async def _load_foundry_agent() -> AgentFrameworkAgent:
                 raw_agent = await provider.get_agent(
                     name=agent_name,
                     tools=[
-                        update_info,
                         update_title,
                         update_description,
                         update_location,

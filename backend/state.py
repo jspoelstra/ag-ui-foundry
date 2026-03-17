@@ -32,23 +32,6 @@ class Project(BaseModel):
 
 
 @tool
-def update_info(project: Project) -> str:
-    """Update the project object with new or modified content.
-
-    You MUST write the complete project with ALL fields, even when changing only a few items.
-    When modifying an existing project, include ALL existing components plus your changes.
-    NEVER delete existing data - only add or modify.
-
-    Args:
-        project: The complete project object with all details.
-
-    Returns:
-        Confirmation that the project was updated.
-    """
-    return "Project information updated."
-
-
-@tool
 def update_title(name: str) -> str:
     """Update the project title.
 
@@ -105,7 +88,8 @@ def add_component(components: list[Component]) -> str:
 
 def _rebuild_tool_models() -> None:
     tool_models = (
-        update_info,
+        update_title,
+        update_description,
         update_location,
         add_component,
     )
