@@ -55,6 +55,8 @@ export default function ProjectPage() {
   const chatTitle = "AI Project Assistant";
   const chatDescription = "Ask me to shape your project";
   const initialLabel = "Hi 👋 How can I help with your project?";
+  const improveButtonLabel = process.env.NEXT_PUBLIC_IMPROVE_BUTTON_LABEL ?? "Improve with AI";
+  const improvePrompt = process.env.NEXT_PUBLIC_IMPROVE_PROMPT ?? "Improve the project";
 
   return (
     <CopilotKit
@@ -343,7 +345,7 @@ function ProjectCard() {
             if (!isLoading) {
               appendMessage(
                 new TextMessage({
-                  content: "Improve the project",
+                  content: improvePrompt,
                   role: Role.User,
                 })
               );
@@ -351,7 +353,7 @@ function ProjectCard() {
           }}
           disabled={isLoading}
         >
-          {isLoading ? "Please Wait..." : "Improve with AI"}
+          {isLoading ? "Please Wait..." : improveButtonLabel}
         </button>
       </div>
     </form>
