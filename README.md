@@ -105,6 +105,93 @@ The frontend is a minimal Next.js app that uses CopilotKit and proxies AG-UI req
 
 By default, the CopilotKit route proxies to <http://localhost:8000/ag-ui>. To change it, set `AG_UI_ENDPOINT` in your environment before running the frontend.
 
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                     BROWSER (localhost:3000)                        │
+│                                                                     │
+│  ┌──────────────────────────────┐  ┌────────────────────────────┐  │
+│  │        ProjectCard           │  │       CopilotChat          │  │
+│  │                              │  │                            │  │
+│  │  - Project name              │  │  "AI Project Assistant"    │  │
+│  │  - Description               │  │                            │  │
+│  │  - Location (country, dist,  │  │  User messages ──────>    │  │
+│  │    lat, long)                │  │  <────── Agent replies     │  │
+│  │  - Components [{type, desc,  │  │  (streaming)               │  │
+│  │    env_impact}]              │  │                            │  │
+│  │                              │  │                            │  │
+│  │  useCoAgent() <── state ──> useCopilotChat()                │  │
+│  │  (bidirectional sync)        │  │                            │  │
+│  └──────────────────────────────┘  └────────────────────────────┘  │
+│                           CopilotKit (AG-UI protocol)               │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │  HTTP (GraphQL)
+                               v
+┌─────────────────────────────────────────────────────────────────────┐
+│              NEXT.JS API ROUTE (proxy)                              │
+│              /api/copilotkit/[integrationId]/route.ts               │
+│                                                                     │
+│  - Extracts method & agentId from payload                          │
+│  - Resolves aliases: ag-ui | librarian | gap-analyst               │
+│  - Forwards to AG_UI_ENDPOINT                                      │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │  HTTP POST
+                               v
+┌─────────────────────────────────────────────────────────────────────┐
+│              FASTAPI BACKEND (localhost:8000)                        │
+│              POST /ag-ui  (agent-framework-ag-ui)                   │
+│                                                                     │
+│    ┌ - - - - AGENT_KIND env var selects mode - - - - - ┐           │
+│                                                                     │
+│    │ ┌─────────────────────┐   ┌──────────────────────┐│           │
+│      │  LOCAL AGENT        │   │  FOUNDRY AGENT       │            │
+│    │ │  (default)          │OR │                      ││           │
+│      │                     │   │  Loaded at startup   │            │
+│    │ │  AzureOpenAI Chat   │   │  from Azure AI       ││           │
+│      │  Client (LLM)       │   │  Foundry project     │            │
+│    │ └─────────┬───────────┘   └──────────┬───────────┘│           │
+│                │                          │                        │
+│    └ - - - - - ┼ - - - - - - - - - - - - -┼ - - - - - -┘           │
+│                │                          │                        │
+│                v                          v                        │
+│  ┌──────────────────────────────────────────────────────────┐      │
+│  │  SHARED TOOLS (state.py)                                 │      │
+│  │                                                          │      │
+│  │  update_title(name)          update_location(location)   │      │
+│  │  update_description(desc)    add_component(components)   │      │
+│  │  update_info(project)        ask_agent(q) [local only]   │      │
+│  │                                                          │      │
+│  │  predict_state_config maps tool args -> state fields     │      │
+│  └──────────────────────────────────────────────────────────┘      │
+│                                                                     │
+│  AgentFrameworkAgent wrapper -> streams state + text back           │
+└────────────┬──────────────────────────────┬─────────────────────────┘
+             │                              │
+             v                              v
+┌────────────────────────┐    ┌──────────────────────────────┐
+│    Azure OpenAI        │    │    Azure AI Foundry          │
+│                        │    │                              │
+│  Chat Completions API  │    │  AIProjectClient (async)     │
+│  (gpt-5-mini, etc.)   │    │  AzureAIProjectAgentProvider │
+│                        │    │                              │
+│  Used by: LOCAL agent  │    │  Used by: FOUNDRY agent      │
+│  for LLM reasoning     │    │  + ask_agent() tool (LOCAL)  │
+└────────────────────────┘    └──────────────────────────────┘
+             │                              │
+             └──────────┬───────────────────┘
+                        v
+             ┌─────────────────────┐
+             │ DefaultAzureCredential
+             │ (azure-identity)    │
+             │                     │
+             │ az login / env /    │
+             │ managed identity    │
+             └─────────────────────┘
+```
+
+**State flow:** User types in chat → Agent reasons (LLM) → Calls tool (e.g. `update_title`) → `predict_state_config` maps tool arg to state field → AG-UI streams state delta → Frontend `useCoAgent()` receives update → `ProjectCard` re-renders with visual ping on changed fields.
+
 ## Contributing
 
 * Fork the repository and create a feature branch.
