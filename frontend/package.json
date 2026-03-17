@@ -12,6 +12,7 @@
     "@copilotkit/react-core": "latest",
     "@copilotkit/react-ui": "latest",
     "@copilotkit/runtime-client-gql": "latest",
+    "dotenv": "latest",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest"

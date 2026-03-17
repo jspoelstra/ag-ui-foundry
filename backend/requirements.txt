@@ -1,6 +1,7 @@
 --pre
-agent-framework
-agent-framework-ag-ui
+agent-framework-core==1.0.0rc4
+agent-framework-azure-ai==1.0.0rc4
+agent-framework-ag-ui==1.0.0b260311
 azure-ai-projects
 azure-identity
 uvicorn
