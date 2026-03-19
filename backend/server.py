@@ -13,7 +13,8 @@ from dotenv import load_dotenv
 
 import uvicorn
 from agent_framework.ag_ui import add_agent_framework_fastapi_endpoint
-from agent_framework.azure import AzureOpenAIChatClient
+from agent_framework.azure import AzureOpenAIChatClient, AzureOpenAIResponsesClient
+from azure.identity import DefaultAzureCredential
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -68,7 +69,7 @@ def create_app(agent_kind: str | None = None) -> FastAPI:
     if selected_agent == "foundry":
         agent = foundry_agent()
     else:
-        agent = local_agent(AzureOpenAIChatClient())
+        agent = local_agent(_create_local_client())
 
     add_agent_framework_fastapi_endpoint(
         app=app,
@@ -86,6 +87,21 @@ def create_app(agent_kind: str | None = None) -> FastAPI:
         }
 
     return app
+
+
+def _create_local_client():
+    responses_deployment = os.getenv("AZURE_OPENAI_RESPONSES_DEPLOYMENT_NAME", "").strip()
+    project_endpoint = os.getenv("AZURE_AI_PROJECT_ENDPOINT", "").strip()
+
+    if responses_deployment and project_endpoint:
+        credential = DefaultAzureCredential()
+        return AzureOpenAIResponsesClient(
+            project_endpoint=project_endpoint,
+            deployment_name=responses_deployment,
+            credential=credential,
+        )
+
+    return AzureOpenAIChatClient()
 
 
 app = create_app()

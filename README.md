@@ -43,14 +43,19 @@ Integrate AG-UI with Azure AI Foundry v2 agents using a FastAPI server and Micro
 
 	```bash
 	export AGENT_KIND="local"
+	# Use the project endpoint (do not include /openai/v1 or /responses).
 	export AZURE_AI_PROJECT_ENDPOINT="https://your-project-name.services.ai.azure.com/api/projects/your-project-name"
 	export AZURE_AI_PROJECT_AGENT_NAME="AgentSmith"
 	# Optional: export AZURE_AI_PROJECT_AGENT_VERSION="1.0"
 	# Optional: export AZURE_AI_PROJECT_AGENT_DESCRIPTION="Ask the Foundry agent a question"
-	# Local agent uses Azure OpenAI for chat and calls the Foundry agent as a tool.
-	export AZURE_OPENAI_CHAT_DEPLOYMENT_NAME="gpt-5-mini"
-	export AZURE_OPENAI_ENDPOINT="https://your-resource-name.cognitiveservices.azure.com/openai/deployments/gpt-5-mini/chat/completions?api-version=2024-05-01-preview"
-	export AZURE_OPENAI_API_KEY="your-azure-openai-api-key"
+	# Local agent uses Foundry's OpenAI-compatible responses endpoint by default.
+	# Uses Entra ID auth (no API key).
+	export AZURE_OPENAI_RESPONSES_DEPLOYMENT_NAME="gpt-5-mini"
+
+	# Legacy Azure OpenAI chat (API key auth)
+	# export AZURE_OPENAI_CHAT_DEPLOYMENT_NAME="gpt-5-mini"
+	# export AZURE_OPENAI_ENDPOINT="https://your-resource-name.cognitiveservices.azure.com/openai/deployments/gpt-5-mini/chat/completions?api-version=2024-05-01-preview"
+	# export AZURE_OPENAI_API_KEY="your-azure-openai-api-key"
 	# Optional frontend UI text
 	export NEXT_PUBLIC_AGENT_NAME="ag-ui"
 	export NEXT_PUBLIC_IMPROVE_BUTTON_LABEL="Improve with AI"
@@ -75,7 +80,7 @@ Use `NEXT_PUBLIC_` prefixes for any values the browser must read.
 
 You can run the backend with either agent implementation.
 
-* `local` uses Azure OpenAI for chat and calls the Foundry agent through the `ask_foundry` tool.
+* `local` uses a Foundry model deployment (responses endpoint) when configured, and calls the Foundry agent through the `ask_foundry` tool.
 * `foundry` loads the agent directly from Foundry.
 
 ```bash
