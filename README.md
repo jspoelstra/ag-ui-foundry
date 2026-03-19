@@ -136,51 +136,51 @@ You can also configure the improve button text and the prompt it sends:
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                     BROWSER (localhost:3000)                        │
-│                                                                     │
+┌────────────────────────────────────────────────────────────────────┐
+│                     BROWSER (localhost:3000)                       │
+│                                                                    │
 │  ┌──────────────────────────────┐  ┌────────────────────────────┐  │
 │  │        ProjectCard           │  │       CopilotChat          │  │
 │  │                              │  │                            │  │
 │  │  - Project name              │  │  "AI Project Assistant"    │  │
 │  │  - Description               │  │                            │  │
-│  │  - Location (country, dist,  │  │  User messages ──────>    │  │
+│  │  - Location (country, dist,  │  │  User messages ──────>     │  │
 │  │    lat, long)                │  │  <────── Agent replies     │  │
 │  │  - Components [{type, desc,  │  │  (streaming)               │  │
 │  │    env_impact}]              │  │                            │  │
 │  │                              │  │                            │  │
-│  │  useCoAgent() <── state ──> useCopilotChat()                │  │
+│  │  useCoAgent() <── state ──> useCopilotChat()                 │  │
 │  │  (bidirectional sync)        │  │                            │  │
 │  └──────────────────────────────┘  └────────────────────────────┘  │
-│                           CopilotKit (AG-UI protocol)               │
-└──────────────────────────────┬──────────────────────────────────────┘
+│                           CopilotKit (AG-UI protocol)              │
+└──────────────────────────────┬─────────────────────────────────────┘
                                │  HTTP (GraphQL)
                                v
-┌─────────────────────────────────────────────────────────────────────┐
-│              NEXT.JS API ROUTE (proxy)                              │
-│              /api/copilotkit/[integrationId]/route.ts               │
-│                                                                     │
+┌────────────────────────────────────────────────────────────────────┐
+│              NEXT.JS API ROUTE (proxy)                             │
+│              /api/copilotkit/[integrationId]/route.ts              │
+│                                                                    │
 │  - Extracts method & agentId from payload                          │
 │  - Resolves aliases: ag-ui | librarian | gap-analyst               │
 │  - Forwards to AG_UI_ENDPOINT                                      │
-└──────────────────────────────┬──────────────────────────────────────┘
+└──────────────────────────────┬─────────────────────────────────────┘
                                │  HTTP POST
                                v
-┌─────────────────────────────────────────────────────────────────────┐
-│              FASTAPI BACKEND (localhost:8000)                        │
-│              POST /ag-ui  (agent-framework-ag-ui)                   │
-│                                                                     │
-│    ┌ - - - - AGENT_KIND env var selects mode - - - - - ┐           │
-│                                                                     │
-│    │ ┌─────────────────────┐   ┌──────────────────────┐│           │
+┌────────────────────────────────────────────────────────────────────┐
+│              FASTAPI BACKEND (localhost:8000)                      │
+│              POST /ag-ui  (agent-framework-ag-ui)                  │
+│                                                                    │
+│    ┌ - - - - AGENT_KIND env var selects mode - - - - - - ┐         │
+│                                                                    │
+│    │ ┌─────────────────────┐   ┌──────────────────────┐  │         │
 │      │  LOCAL AGENT        │   │  FOUNDRY AGENT       │            │
-│    │ │  (default)          │OR │                      ││           │
+│    │ │  (default)          │OR │                      │  │         │
 │      │                     │   │  Loaded at startup   │            │
-│    │ │  AzureOpenAI Chat   │   │  from Azure AI       ││           │
+│    │ │  AzureOpenAI Chat   │   │  from Azure AI       │  │         │
 │      │  Client (LLM)       │   │  Foundry project     │            │
-│    │ └─────────┬───────────┘   └──────────┬───────────┘│           │
+│    │ └─────────┬───────────┘   └──────────┬───────────┘  │         │
 │                │                          │                        │
-│    └ - - - - - ┼ - - - - - - - - - - - - -┼ - - - - - -┘           │
+│    └ - - - - - ┼ - - - - - - - - - - - - -┼ - - - - - - -┘         │
 │                │                          │                        │
 │                v                          v                        │
 │  ┌──────────────────────────────────────────────────────────┐      │
@@ -192,30 +192,30 @@ You can also configure the improve button text and the prompt it sends:
 │  │                                                          │      │
 │  │  predict_state_config maps tool args -> state fields     │      │
 │  └──────────────────────────────────────────────────────────┘      │
-│                                                                     │
-│  AgentFrameworkAgent wrapper -> streams state + text back           │
-└────────────┬──────────────────────────────┬─────────────────────────┘
+│                                                                    │
+│  AgentFrameworkAgent wrapper -> streams state + text back          │
+└────────────┬──────────────────────────────┬────────────────────────┘
              │                              │
              v                              v
 ┌────────────────────────┐    ┌──────────────────────────────┐
 │    Azure OpenAI        │    │    Azure AI Foundry          │
 │                        │    │                              │
 │  Chat Completions API  │    │  AIProjectClient (async)     │
-│  (gpt-5-mini, etc.)   │    │  AzureAIProjectAgentProvider │
+│  (gpt-5-mini, etc.)    │    │  AzureAIProjectAgentProvider │
 │                        │    │                              │
 │  Used by: LOCAL agent  │    │  Used by: FOUNDRY agent      │
 │  for LLM reasoning     │    │  + ask_agent() tool (LOCAL)  │
 └────────────────────────┘    └──────────────────────────────┘
              │                              │
-             └──────────┬───────────────────┘
-                        v
-             ┌─────────────────────┐
-             │ DefaultAzureCredential
-             │ (azure-identity)    │
-             │                     │
-             │ az login / env /    │
-             │ managed identity    │
-             └─────────────────────┘
+             └─────────────┬────────────────┘
+                           v
+             ┌────────────────────────┐
+             │ DefaultAzureCredential |
+             │ (azure-identity)       │
+             │                        │
+             │ az login / env /       │
+             │ managed identity       │
+             └────────────────────────┘
 ```
 
 **State flow:** User types in chat → Agent reasons (LLM) → Calls tool (e.g. `update_title`) → `predict_state_config` maps tool arg to state field → AG-UI streams state delta → Frontend `useCoAgent()` receives update → `ProjectCard` re-renders with visual ping on changed fields.
