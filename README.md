@@ -201,8 +201,8 @@ You can also configure the improve button text and the prompt it sends:
 │    Azure OpenAI        │    │    Azure AI Foundry          │
 │                        │    │                              │
 │  Chat Completions API  │    │  AIProjectClient (async)     │
-│  (gpt-5-mini, etc.)    │    │  AzureAIProjectAgentProvider │
-│                        │    │                              │
+│  (gpt-5-mini, etc.)    │    │  Prompt definition lookup    │
+│                        │    │  + Responses API client      │
 │  Used by: LOCAL agent  │    │  Used by: FOUNDRY agent      │
 │  for LLM reasoning     │    │  + ask_agent() tool (LOCAL)  │
 └────────────────────────┘    └──────────────────────────────┘
