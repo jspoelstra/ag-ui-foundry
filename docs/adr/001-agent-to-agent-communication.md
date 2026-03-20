@@ -65,37 +65,25 @@ orchestrator = project_client.agents.create_agent(
 - Less control over the communication (opaque server-side handoff)
 - Unclear how `predict_state_config` would work with a Foundry-hosted orchestrator
 
-> **Update (2026-03-11) — Foundry-hosted agent with client-side tools: findings**
+> **Update (2026-03-20) — Foundry prompt agent rebuilt on Responses client**
 >
-> We built and tested a hybrid variant of Option 1 in `foundry_agent.py`: a
-> Foundry-hosted agent loaded via `AzureAIProjectAgentProvider.get_agent()` with
-> the state-management tools (`update_title`, `update_description`, etc.) passed
-> as client-side function tools. This proved that **client-side function tools on
-> Foundry agents do work** — the Agent Framework registers tool definitions with
-> the Foundry agent, intercepts tool calls locally, executes the functions, and
-> submits results back via `submit_tool_outputs`. AG-UI's `predict_state_config`
-> can intercept the tool call arguments and stream state updates to the frontend,
-> exactly as it does for the local agent.
+> A recent Agent Framework update changed the provider-returned Foundry agent
+> path: `AzureAIClient` now warns that it does not support runtime tool or
+> structured-output overrides after agent creation, which prevents the AG-UI
+> state tools from being attached at invocation time.
 >
-> However, we hit an **unsolved blocker**: when the Foundry agent also has
-> server-side tool connections (in our case, MCP tools including a Foundry IQ
-> knowledge base), the intermediate tool-call and tool-end events from those
-> server-side tools leak through the AG-UI event stream. The client-side
-> `AgentFrameworkAgent` receives `tool_call_end` events for tool calls it never
-> initiated, causing AG-UI protocol errors ("tool-end message with no active tool
-> call"). Extensive workaround attempts (filtering, event suppression) did not
-> resolve the issue.
+> The working fix is to fetch the Prompt Agent definition from Foundry, then
+> reconstruct a local `Agent()` on `AzureOpenAIResponsesClient` using the same
+> prompt instructions and model deployment. Hosted Foundry tools from the prompt
+> definition are preserved, and the local AG-UI state tools (`update_title`,
+> `update_description`, `update_location`, `add_component`) are merged in as
+> runtime function tools.
 >
-> This is the primary reason the project uses the "Foundry agent as tool"
-> pattern (Option 3) rather than a Foundry-hosted orchestrator.
+> This restores frontend state updates in Foundry mode without the runtime-tools
+> warning, while keeping the prompt authored in Foundry as the source of truth.
 >
-> **What would unblock this path:**
-> - The Agent Framework or AG-UI adapter filtering out events for server-side-only
->   tool calls before they reach the AG-UI stream
-> - The Foundry Agent Service providing a mode that suppresses tool events for
->   server-side tools when the caller is a client-side orchestrator
-> - A clear separation in the event stream between client-side tool calls
->   (requiring `submit_tool_outputs`) and server-side tool calls (fully resolved
+> The older provider-wrapped execution path is no longer the recommended
+> implementation for this repo.
 >   within the Foundry service)
 
 ### Option 2: WorkflowBuilder (Agent Framework SDK)
